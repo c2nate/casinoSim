@@ -52,19 +52,15 @@ class Blackjack
     puts "\nYour hand: #{display_hand(player_hand)} (Total: #{hand_total(player_hand)})"
     puts "Dealer's visible card: #{dealer_hand.first}"
 
-    player_turn(deck, player_hand, bet)
-
-    # Check if player busted and skip dealer turn if so
-    if hand_total(player_hand) > 21
-      puts "\nYou busted! You lose $#{bet}."
+    result = player_turn(deck, player_hand)
+    if result == :lose
       @balance -= bet
-      puts "Current balance: $#{@balance}"
+      puts "You lost $#{bet}. Current balance: $#{@balance}"
       return
     end
 
     dealer_turn(deck, dealer_hand)
     resolve_game(player_hand, dealer_hand, bet)
-    puts "\n" # Ensure spacing between rounds
   end
 
   def generate_deck
@@ -99,7 +95,7 @@ class Blackjack
     total
   end
 
-  def player_turn(deck, hand, bet)
+  def player_turn(deck, hand)
     loop do
       puts "\nYour hand: #{display_hand(hand)} (Total: #{hand_total(hand)})"
       print "Would you like to hit or stand? (h/s): "
@@ -108,16 +104,13 @@ class Blackjack
       if choice == 'h'
         hand << deck.pop
         puts "\nYou drew: #{hand.last}"
-        # Check for bust immediately and exit the loop if busted
         if hand_total(hand) > 21
-          puts "\nYou busted! You lose $#{bet}."
-          @balance -= bet
-          puts "Current balance: $#{@balance}"
-          return # Exit the player turn early
+          puts "\nYou busted!"
+          return :lose
         end
       elsif choice == 's'
         puts "\nYou chose to stand."
-        break
+        return :stand
       else
         puts "\nInvalid choice. Please enter 'h' to hit or 's' to stand."
       end
@@ -162,8 +155,8 @@ class Blackjack
 
     [hand1, hand2].each_with_index do |hand, index|
       puts "\nPlaying Hand #{index + 1}:"
-      player_turn(deck, hand, bet)
-      if hand_total(hand) > 21
+      result = player_turn(deck, hand)
+      if result == :lose
         puts "\nHand #{index + 1} busted! You lose $#{bet}."
         @balance -= bet
       else
