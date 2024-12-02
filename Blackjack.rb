@@ -8,25 +8,32 @@ class Blackjack
     'Spades' => '♠'
   }
 
-  def initialize(balance)
-    @balance = balance
+  def initialize(casino_sim)
+    @casino_sim = casino_sim
   end
 
   def play
     puts "\nWelcome to Blackjack!"
+    display_balance
+
     loop do
       bet = get_bet_amount
       break if bet == 0
       play_round(bet)
+      display_balance
     end
   end
 
   private
 
+  def display_balance
+    puts "Current Balance: $#{@casino_sim.balance}\n"
+  end
+
   def get_bet_amount
     print "\nEnter your bet amount (or 0 to skip): $"
     amount = gets.chomp.to_i
-    if amount > @balance
+    if amount > @casino_sim.balance
       puts "\nYou can't bet more than your balance!"
       get_bet_amount
     elsif amount < 0
@@ -54,8 +61,8 @@ class Blackjack
 
     result = player_turn(deck, player_hand)
     if result == :lose
-      @balance -= bet
-      puts "You lost $#{bet}. Current balance: $#{@balance}"
+      @casino_sim.update_balance(@casino_sim.balance - bet)
+      puts "You lost $#{bet}."
       return
     end
 
@@ -100,7 +107,7 @@ class Blackjack
       puts "\nYour hand: #{display_hand(hand)} (Total: #{hand_total(hand)})"
       print "Would you like to hit or stand? (h/s): "
       choice = gets.chomp.downcase
-  
+
       if choice == 'h'
         hand << deck.pop
         puts "\nYou drew: #{hand.last}"
@@ -132,14 +139,13 @@ class Blackjack
 
     if dealer_total > 21 || player_total > dealer_total
       puts "\nCongratulations! You won $#{bet}!"
-      @balance += bet
+      @casino_sim.update_balance(@casino_sim.balance + bet)
     elsif dealer_total > player_total
       puts "\nDealer wins with #{dealer_total}. You lose $#{bet}."
-      @balance -= bet
+      @casino_sim.update_balance(@casino_sim.balance - bet)
     else
       puts "\nIt's a tie! Your bet is returned."
     end
-    puts "Current balance: $#{@balance}"
   end
 
   def can_split?(hand)
@@ -158,7 +164,7 @@ class Blackjack
       result = player_turn(deck, hand)
       if result == :lose
         puts "\nHand #{index + 1} busted! You lose $#{bet}."
-        @balance -= bet
+        @casino_sim.update_balance(@casino_sim.balance - bet)
       else
         dealer_turn(deck, dealer_hand)
         resolve_game(hand, dealer_hand, bet)
