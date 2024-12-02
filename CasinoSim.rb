@@ -1,10 +1,11 @@
 class CasinoSim
   require_relative 'roulette'
   require_relative 'blackjack'
+
   def initialize
     @balance = 100
-    @roulette = Roulette.new(@balance)
-    @blackjack = Blackjack.new(@balance)
+    @roulette = Roulette.new(self)  # Pass reference to CasinoSim
+    @blackjack = Blackjack.new(self)
   end
 
   def start
@@ -15,18 +16,24 @@ class CasinoSim
       case choice
       when "roulette"
         @roulette.play
-        @balance = @roulette.balance # Update balance
       when "blackjack"
         @blackjack.play
-        @balance = @blackjack.balance # Update balance
       when "exit"
         puts "Thank you for visiting the casino! Goodbye!"
         break
       else
-        puts "Invalid choice, please choose 'roulette', 'blackjack' or 'exit'."
+        puts "Invalid choice, please choose 'roulette', 'blackjack', or 'exit'."
       end
       check_balance
     end
+  end
+
+  def balance
+    @balance
+  end
+
+  def update_balance(new_balance)
+    @balance = new_balance
   end
 
   private
@@ -67,7 +74,6 @@ class CasinoSim
     end
   end
 end
-
 
 if __FILE__ == $0
   simulator = CasinoSim.new
