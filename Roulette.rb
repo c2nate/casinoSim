@@ -1,12 +1,12 @@
 class Roulette
-  attr_reader :balance
-
-  def initialize(balance)
-    @balance = balance
+  def initialize(casino_sim)
+    @casino_sim = casino_sim
   end
 
   def play
     puts "\nWelcome to Roulette!"
+    display_balance
+
     loop do
       print "Would you like to place a bet or exit? (bet/exit): "
       choice = gets.chomp.downcase
@@ -28,6 +28,10 @@ class Roulette
   end
 
   private
+
+  def display_balance
+    puts "Current Balance: $#{@casino_sim.balance}\n"
+  end
 
   def place_bet
     bet = get_bet_amount
@@ -54,13 +58,12 @@ class Roulette
   def get_bet_amount
     print "\nEnter your bet amount (or 0 to skip): $"
     amount = gets.chomp.to_i
-    if amount > @balance
+    if amount > @casino_sim.balance
       puts "You can't bet more than your balance!"
       get_bet_amount
     elsif amount < 0
       puts "\nBet can't be negative!"
       get_bet_amount
-      puts "\n"
     else
       amount
     end
@@ -80,16 +83,17 @@ class Roulette
 
   def calculate_roulette_result(bet, result)
     if result[:number] == bet[:number]
-      puts "Congratulations! You won!"
-      @balance += bet[:amount] * 35
+      winnings = bet[:amount] * 35
+      puts "Congratulations! You won $#{winnings}!"
+      @casino_sim.update_balance(@casino_sim.balance + winnings)
     elsif result[:color] == bet[:color]
-      puts "Congratulations! You won on " + result[:color] + "!"
-      @balance += bet[:amount] * 2
+      winnings = bet[:amount] * 2
+      puts "Congratulations! You won $#{winnings} on #{result[:color]}!"
+      @casino_sim.update_balance(@casino_sim.balance + winnings)
     else
       puts "\nBetter luck next time!"
-      @balance -= bet[:amount]
+      @casino_sim.update_balance(@casino_sim.balance - bet[:amount])
     end
-    puts "\nCurrent balance: $#{@balance}"
-    puts "\n"
+    display_balance
   end
 end
